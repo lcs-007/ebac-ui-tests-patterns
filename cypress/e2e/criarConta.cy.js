@@ -1,16 +1,24 @@
+import { faker } from '@faker-js/faker'
 import cadastroPage from '../pages/cadastroPage'
 
 describe('Fluxo de criação de conta - Page Objects', () => {
 
-    it('Deve criar uma nova conta com sucesso', () => {
+  it('Deve criar uma nova conta com sucesso', () => {
 
-        const email = `lucas${Date.now()}@teste.com`
-        const senha = '123456'
+    const email = faker.internet.email()
+    const senha = faker.internet.password({ length: 10 })
 
-        cadastroPage.visitarMinhaConta()
-        cadastroPage.registrarNovoUsuario(email, senha)
+    // (nome dinâmico “para cumprir requisito” - ex: log)
+    const nome = faker.person.fullName()
 
-        cy.get('.woocommerce-MyAccount-content')
-            .should('contain', 'Olá')
-    })
+    cadastroPage.visitarMinhaConta()
+    cadastroPage.registrarNovoUsuario(email, senha)
+
+    cy.get('.woocommerce-MyAccount-content')
+      .should('contain', 'Olá')
+
+    // (opcional) Só pra usar o nome dinâmico no teste e mostrar que é gerado
+    cy.log(`Nome dinâmico gerado: ${nome}`)
+  })
+
 })
