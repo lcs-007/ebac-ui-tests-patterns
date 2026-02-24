@@ -1,0 +1,54 @@
+name: Run tests and publish report to Pages
+
+on:
+  push:
+    branches: ["exercicios/modulo-4"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  test-and-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Run Cypress tests
+        run: npx cypress run
+
+      - name: Prepare folder for Pages
+        run: |
+          mkdir -p cypress/reports/html
+          if [ -f "cypress/reports/index.html" ]; then
+            cp cypress/reports/index.html cypress/reports/html/index.html
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: cypress/reports/html
+
+  deploy:
+    needs: test-and-report
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
